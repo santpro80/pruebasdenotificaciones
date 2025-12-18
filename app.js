@@ -37,7 +37,11 @@ function iniciarApp(rol) {
 }
 
 function obtenerToken() {
-    messaging.getToken({ vapidKey: VAPID_KEY }).then((currentToken) => {
+    navigator.serviceWorker.register('./firebase-messaging-sw.js')
+    .then((registration) => {
+        return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+    })
+    .then((currentToken) => {
         if (currentToken) {
             console.log('Token:', currentToken);
             document.getElementById('token-text').innerText = currentToken;
