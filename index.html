@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maqueta Pedidos PWA</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        .btn { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        .btn-approve { background: #28a745; }
+        .hidden { display: none; }
+        #token-area { word-break: break-all; font-size: 10px; color: #666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>📦 Sistema de Pedidos</h1>
+
+    <!-- Selección de Rol -->
+    <div id="login-screen">
+        <h3>Selecciona tu rol para probar:</h3>
+        <button class="btn" onclick="iniciarApp('comprador')">Soy Comprador 🙋‍♂️</button>
+        <br><br>
+        <button class="btn" onclick="iniciarApp('vendedor')">Soy Vendedor 🏪</button>
+    </div>
+
+    <!-- Pantalla Comprador -->
+    <div id="comprador-screen" class="hidden">
+        <h2>Panel Comprador</h2>
+        <div class="card">
+            <p>Producto: <strong>Zapatillas Running</strong></p>
+            <button class="btn" onclick="hacerPedido()">Solicitar Compra</button>
+        </div>
+        <div id="estado-pedido"></div>
+    </div>
+
+    <!-- Pantalla Vendedor -->
+    <div id="vendedor-screen" class="hidden">
+        <h2>Panel Vendedor</h2>
+        <p>Pedidos entrantes:</p>
+        <div id="lista-pedidos">Esperando pedidos...</div>
+    </div>
+
+    <div id="token-area">
+        <p>Tu Token de notificación (para pruebas manuales):</p>
+        <span id="token-text">...</span>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
