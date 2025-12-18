@@ -1,11 +1,13 @@
-const functions = require("firebase-functions");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
 // 1. Notificar al VENDEDOR cuando entra un pedido nuevo
-exports.notificarVendedor = functions.firestore
-    .document('pedidos/{pedidoId}')
-    .onCreate(async (snapshot, context) => {
+exports.notificarVendedor = onDocumentCreated("pedidos/{pedidoId}", async (event) => {
+        const snapshot = event.data;
+        if (!snapshot) {
+            return;
+        }
         const pedido = snapshot.data();
         
         // Buscamos el token del vendedor en la base de datos
@@ -38,11 +40,9 @@ exports.notificarVendedor = functions.firestore
     });
 
 // 2. Notificar al COMPRADOR cuando le aprueban el pedido
-exports.notificarComprador = functions.firestore
-    .document('pedidos/{pedidoId}')
-    .onUpdate(async (change, context) => {
-        const nuevoDato = change.after.data();
-        const datoAnterior = change.before.data();
+exports.notificarComprador = onDocumentUpdated("pedidos/{pedidoId}", async (event) => {
+        const nuevoDato = event.data.after.data();
+        const datoAnterior = event.data.before.data();
 
         // Solo si el estado cambió a 'aprobado'
         if (nuevoDato.estado === 'aprobado' && datoAnterior.estado !== 'aprobado') {
