@@ -110,5 +110,10 @@ function aprobar(id) {
 
 messaging.onMessage((payload) => {
     console.log('Mensaje recibido: ', payload);
-    alert(`🔔 NOTIFICACIÓN: ${payload.notification.title}\n${payload.notification.body}`);
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+      body: payload.notification.body,
+      icon: 'https://cdn-icons-png.flaticon.com/512/1041/1041888.png'
+    };
+    new Notification(notificationTitle, notificationOptions);
 });
