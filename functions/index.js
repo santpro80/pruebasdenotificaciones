@@ -22,6 +22,14 @@ exports.notificarVendedor = functions.firestore
                 title: '¡Nueva Venta! 💰',
                 body: `Alguien quiere comprar: ${pedido.producto}`,
             },
+            webpush: {
+                fcm_options: {
+                    link: 'https://santpro80.github.io/pruebasdenotificaciones/'
+                },
+                notification: {
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1041/1041888.png'
+                }
+            },
             token: tokenVendedor
         };
 
@@ -52,6 +60,14 @@ exports.notificarComprador = functions.firestore
                 notification: {
                     title: '¡Pedido Aprobado! ✅',
                     body: `El vendedor aprobó tu compra de ${nuevoDato.producto}.`,
+                },
+                webpush: {
+                    fcm_options: {
+                        link: 'https://santpro80.github.io/pruebasdenotificaciones/'
+                    },
+                    notification: {
+                        icon: 'https://cdn-icons-png.flaticon.com/512/1041/1041888.png'
+                    }
                 },
                 token: tokenComprador
             };
