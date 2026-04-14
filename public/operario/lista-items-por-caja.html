@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items de Caja | Sistema de Trazabilidad</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "villalba-blue": "#2563eb" },
+                    fontFamily: { sans: ["\"Public Sans\"", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { margin: 0; min-height: 100vh; opacity: 0; animation: fadeInMenu 0.4s ease forwards; animation-delay: 0.15s; }
+        @keyframes fadeInMenu { to { opacity: 1; } }
+        .glass-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        html.dark .glass-card { background: rgba(22, 30, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: none; }
+    </style>
+    <link rel="stylesheet" href="../css/dark-theme.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body class="bg-gradient-to-br from-[#6e8efb] to-[#a777e3] dark:from-[#0a0f16] dark:to-[#0a0f16] text-slate-900 dark:text-[#f1f5f9] antialiased">
+    <header class="bg-[#f8fafc] dark:bg-transparent backdrop-blur-md shadow-sm dark:shadow-none border-b border-white/20 dark:border-white/10 px-4 lg:px-8 py-3 flex items-center justify-between gap-4 sticky top-0 z-40 w-full hover:bg-white/95 transition-colors">
+        <div class="header-left flex items-center gap-4">
+            <button id="back-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-villalba-blue/10 text-villalba-blue hover:bg-villalba-blue hover:text-white transition-all border border-villalba-blue/20 group">
+                <span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                <span class="text-xs font-bold uppercase tracking-wide">Volver</span>
+            </button>
+        </div>
+        <div class="user-info flex items-center gap-4">
+            <span id="user-display-name" class="hidden md:inline-block text-sm font-bold text-slate-700 dark:text-slate-300 uppercase">Cargando...</span>
+            <button id="logout-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span class="text-xs font-bold uppercase tracking-wide hidden sm:inline-block">Salir</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="px-4 lg:px-8 py-8 lg:py-12 max-w-5xl mx-auto w-full">
+        <div class="glass-card rounded-[2.5rem] p-6 lg:p-10 mb-8 border border-white/20 dark:border-white/5 shadow-xl relative overflow-hidden z-10 w-full">
+            <div class="mb-8 text-left relative z-20">
+                <h1 id="box-serial-number-display" class="text-3xl lg:text-4xl font-black text-villalba-blue dark:text-white tracking-tight mb-2 uppercase">Cargando...</h1>
+                <p class="text-sm tracking-widest uppercase text-slate-500 dark:text-slate-400 font-bold">Listado de Ítems en Caja</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-6 relative z-20 w-full">
+                <div class="relative flex-1 w-full">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input type="text" id="searchInput" class="w-full pl-12 pr-4 py-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 focus:border-villalba-blue dark:focus:border-villalba-blue outline-none transition-colors text-sm font-medium" placeholder="Buscar por código, descripción o N° de serie...">
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <button id="add-item-btn" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-emerald-500 text-white font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:-translate-y-1 transition-all">
+                        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                        Agregar
+                    </button>
+                    
+                </div>
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-r from-villalba-blue/0 to-villalba-blue/5 opacity-10 transition-opacity"></div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-6 lg:p-10 min-h-[400px]">
+            <div id="loading-state" class="flex flex-col items-center justify-center p-12">
+                <div class="w-12 h-12 border-4 border-villalba-blue/20 border-t-villalba-blue rounded-full animate-spin mb-4"></div>
+                <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando ítems...</p>
+            </div>
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center p-12 text-slate-500">
+                <span class="material-symbols-outlined text-5xl mb-4">move_to_inbox</span>
+                <p class="font-bold uppercase tracking-widest text-xs">Caja vacía</p>
+            </div>
+            <div id="error-state" class="hidden flex flex-col items-center justify-center p-12 text-rose-500">
+                <span class="material-symbols-outlined text-5xl mb-4">error</span>
+                <p class="font-bold uppercase tracking-widest text-xs">Error al cargar ítems</p>
+            </div>
+            <ul id="itemsList" class="hidden flex flex-col gap-3"></ul>
+        </div>
+    </main>
+
+    <div id="notification-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] max-w-sm w-full opacity-0 translate-y-8 transition-all duration-500 pointer-events-none">
+        <div class="glass-card rounded-2xl p-4 flex items-center gap-4 border-none shadow-2xl">
+            <div class="w-10 h-10 rounded-xl bg-villalba-blue/10 flex items-center justify-center text-villalba-blue shadow-inner">
+                <span id="toast-icon" class="material-symbols-outlined">notifications</span>
+            </div>
+            <p id="toast-message" class="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200"></p>
+        </div>
+    </div>
+
+    <script type="module" src="js/lista-items-por-caja.js"></script>
+    <script type="module">import "../js/theme.js";</script>
+</body>
+</html>
