@@ -249,6 +249,7 @@
                 <button id="import-schema-btn" class="btn-import btn-import-schema">Importar Esquema</button>
                 <button id="import-items-btn" class="btn-import btn-import-items">Importar Ítems (por caja)</button>
                 <button id="import-catalog-btn" class="btn-import btn-import-catalog">Importar Catálogo Maestro</button>
+                <button id="manual-catalog-btn" class="btn-import" style="background-color: #f39c12;">Agregar Ítem al Catálogo (Manual)</button>
             </div>
         </div>
     </main>
@@ -272,6 +273,9 @@
         });
         document.getElementById('import-catalog-btn')?.addEventListener('click', () => {
             window.location.href = 'importar-catalogo.html';
+        });
+        document.getElementById('manual-catalog-btn')?.addEventListener('click', () => {
+            window.location.href = 'agregar-item-catalogo.html';
         });
         document.getElementById('logout-btn')?.addEventListener('click', async () => {
             try {

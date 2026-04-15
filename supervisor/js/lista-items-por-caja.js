@@ -196,12 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400";
             
             listItem.innerHTML = `
-                <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-[120px_1fr_150px] gap-4 items-center">
+                <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 shrink-0 rounded-xl bg-villalba-blue/10 flex items-center justify-center text-villalba-blue transition-colors group-hover:bg-villalba-blue group-hover:text-white">
-                            <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                        <div class="w-12 h-12 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-200 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-300 shadow-inner relative transition-transform group-hover:scale-105 cursor-pointer">
+                            <span class="material-symbols-outlined text-[24px] text-slate-300 dark:text-slate-400 absolute z-0 pointer-events-none">inventory_2</span>
+                            <img src="../assets/items/${itemCode}.webp" alt="${itemCode}" class="item-img-clickable w-[90%] h-[90%] object-contain relative z-10 transition-transform pointer-events-auto" onerror="this.style.opacity='0'" onload="this.style.opacity='1'; this.previousElementSibling.style.display='none'">
                         </div>
-                        <span class="text-xs font-black tracking-widest text-slate-500 uppercase group-hover:text-villalba-blue transition-colors">${itemCode || 'S/C'}</span>
+                        <span class="text-[13px] whitespace-nowrap md:w-auto font-black tracking-widest text-slate-500 uppercase group-hover:text-villalba-blue transition-colors">${itemCode || 'S/C'}</span>
                     </div>
                     
                     <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm leading-tight uppercase break-words" title="${description || 'Sin Descripción'}">${description || 'Sin Descripción'}</h3>
@@ -218,15 +219,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             
             listItem.addEventListener('click', (e) => {
-                if (e.target.closest('.btn-delete-item')) {
+                if (e.target.closest('.btn-delete-item')) return;
+                
+                // Si hizo clic en la imagen, abrir modal grande
+                if (e.target.closest('.item-img-clickable')) {
+                    const img = e.target.closest('.item-img-clickable');
+                    const imageModal = document.getElementById('imageModal');
+                    const enlargedImage = document.getElementById('enlargedImage');
+                    if (imageModal && enlargedImage && img.style.opacity !== '0') {
+                        enlargedImage.src = img.src;
+                        imageModal.style.display = 'flex';
+                    }
                     return;
                 }
+
                 if (currentSelectedItem) {
                     currentSelectedItem.classList.remove('selected');
                 }
-                listItem.classList.add('selected');
                 currentSelectedItem = listItem;
-
+                listItem.classList.add('selected');
                 openEditModal(originalItemName, itemValue);
             });
 
@@ -558,8 +569,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (confirmPrestamoBtn) confirmPrestamoBtn.addEventListener('click', () => { const num = prestamoInput.value.trim(); if (num) generarPDF('Salida', num); else showNotification("Por favor, ingresa un número de préstamo.", "error"); });
     if (cancelPrestamoBtn) cancelPrestamoBtn.addEventListener('click', () => { if (prestamoModal) prestamoModal.style.display = 'none'; });
-    if (cancelEditBtn) cancelEditBtn.addEventListener('click', () => { if (editSerialModal) editSerialModal.style.display = 'none'; });
-    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', () => { if (deleteConfirmModal) deleteConfirmModal.style.display = 'none'; });
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', () => editSerialModal.style.display = 'none');
+    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', () => deleteConfirmModal.style.display = 'none');
+
+    const imageModal = document.getElementById('imageModal');
+    const closeImageModalBtn = document.getElementById('closeImageModal');
+    if (closeImageModalBtn) closeImageModalBtn.addEventListener('click', () => imageModal.style.display = 'none');
+    if (imageModal) imageModal.addEventListener('click', (e) => { if (e.target === imageModal) imageModal.style.display = 'none'; });
     if (backBtn) backBtn.addEventListener('click', () => window.history.back());
     if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(() => { if (unsubscribeFromItems) unsubscribeFromItems(); window.location.href = '../login.html'; }));
     if (menuBtn) menuBtn.addEventListener('click', () => { window.location.href = 'menu.html'; });

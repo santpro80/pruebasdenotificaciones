@@ -260,6 +260,16 @@
         </div>
     </div>
 
+    <!-- Image View Modal -->
+    <div id="imageModal" class="modal-overlay" style="z-index: 10000; flex-direction: column;">
+        <div class="relative w-auto max-w-3xl max-h-[80vh] bg-transparent flex flex-col items-center justify-center p-4">
+            <button id="closeImageModal" class="absolute top-0 right-4 md:-top-10 md:-right-10 w-10 h-10 bg-black/50 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors shadow-lg backdrop-blur-md z-50">
+                <span class="material-symbols-outlined font-bold">close</span>
+            </button>
+            <img id="enlargedImage" src="" alt="Vista ampliada" class="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl bg-white/90 dark:bg-slate-900/90 p-2">
+        </div>
+    </div>
+
     <div id="deleteConfirmModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Confirmar Eliminación</h2>

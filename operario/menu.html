@@ -360,12 +360,11 @@
             unhide('btn-cuenta');
             unhide('btn-tickets');
             if (!isMantenimiento) unhide('btn-cajas');
-            unhide('btn-reportar-problema');
-            unhide('btn-notifications');
-
             // Manto o Super
             if (isSupervisor || isMantenimiento) {
                 unhide('btn-ver-problemas');
+                unhide('btn-reportar-problema');
+                unhide('btn-notifications');
             }
 
             // Super solo

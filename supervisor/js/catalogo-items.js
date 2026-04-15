@@ -111,16 +111,62 @@ document.addEventListener('DOMContentLoaded', () => {
         return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
     };
 
-    const renderItems = (items) => {
-        tbody.innerHTML = '';
-        
-        if (items.length === 0) {
-            emptyState.style.display = 'flex';
-            return;
-        }
-        emptyState.style.display = 'none';
+    let currentRenderedCount = 0;
+    const RENDER_CHUNK_SIZE = 50;
+    let currentFilteredItems = [];
 
-        items.forEach(item => {
+    // Configuramos el modal y visor 3D genéricos una sola vez
+    const imageModal = document.getElementById('image-modal');
+    const modalImage = document.getElementById('modal-image');
+    const modal3d = document.getElementById('modal-3d');
+    const modalCaption = document.getElementById('modal-caption');
+
+    const openModal = () => {
+        imageModal.classList.remove('hidden');
+        void imageModal.offsetWidth; // Reflow
+        imageModal.classList.add('opacity-100');
+    };
+
+    modal3d?.addEventListener('error', (e) => {
+         modalCaption.textContent = `Error: Archivo 3D no encontrado para ${modalCaption.textContent.split(': ')[1]}`;
+         modal3d.classList.add('hidden');
+    });
+
+    // Sentinel para infinite scroll
+    const tableContainer = document.querySelector('.overflow-auto.custom-scrollbar');
+    const observerSentinel = document.createElement('div');
+    observerSentinel.className = 'w-full py-6 flex justify-center items-center text-slate-400';
+    observerSentinel.innerHTML = `<span class="material-symbols-outlined animate-spin text-[32px]">autorenew</span>`;
+    observerSentinel.style.display = 'none';
+    tableContainer.appendChild(observerSentinel);
+
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && currentRenderedCount < currentFilteredItems.length) {
+            renderItems(null, false);
+        }
+    }, { root: tableContainer, rootMargin: "100px" });
+    observer.observe(observerSentinel);
+
+    function renderItems(items, isInitialRender = true) {
+        if (isInitialRender) {
+            currentFilteredItems = items || [];
+            currentRenderedCount = 0;
+            tbody.innerHTML = '';
+            
+            if (currentFilteredItems.length === 0) {
+                emptyState.style.display = 'flex';
+                observerSentinel.style.display = 'none';
+                return;
+            }
+            emptyState.style.display = 'none';
+        }
+
+        const chunk = currentFilteredItems.slice(currentRenderedCount, currentRenderedCount + RENDER_CHUNK_SIZE);
+        if (chunk.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+
+        chunk.forEach(item => {
             const tr = document.createElement('tr');
             tr.className = 'group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors';
             
@@ -129,18 +175,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             tr.innerHTML = `
                 <td class="py-2 px-4 text-center">
-                    <div class="relative w-[72px] h-[72px] mx-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 overflow-hidden shadow-sm flex items-center justify-center">
-                        <span class="material-symbols-outlined text-[24px] text-slate-300 dark:text-slate-600 absolute z-0">image</span>
+                    <div class="relative w-[72px] h-[72px] mx-auto rounded-lg border border-slate-200 dark:border-slate-300 bg-slate-100 dark:bg-slate-200 overflow-hidden shadow-inner flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[24px] text-slate-300 dark:text-slate-400 absolute z-0">image</span>
                         <img src="${imgPath}" alt="${item.codigo_format}" 
-                            class="w-[90%] h-[90%] object-contain relative z-10 bg-white dark:bg-transparent transition-transform group-hover:scale-105"
+                            class="w-[90%] h-[90%] object-contain relative z-10 transition-transform group-hover:scale-105"
                             onerror="this.style.opacity='0'"
                             onload="this.style.opacity='1'; this.previousElementSibling.style.display='none'">
                         
                         <div class="absolute inset-0 z-20 flex flex-col md:flex-row items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 p-1">
-                            <button class="view-3d-btn p-1 md:p-1.5 rounded-md bg-purple-500/90 hover:bg-purple-600 dark:bg-purple-500/80 dark:hover:bg-purple-500 text-white shadow-sm transition-colors" data-code="${item.codigo_format}" title="Ver modelo 3D">
+                            <button class="view-3d-btn p-1 md:p-1.5 rounded-md bg-purple-500/90 hover:bg-purple-600 dark:bg-purple-500/80 dark:hover:bg-purple-500 text-white shadow-sm transition-colors" title="Ver modelo 3D">
                                 <span class="material-symbols-outlined text-[18px] md:text-[20px]">3d_rotation</span>
                             </button>
-                            <button class="add-img-btn p-1 md:p-1.5 rounded-md bg-villalba-blue/90 hover:bg-blue-600 dark:hover:bg-blue-500 text-white shadow-sm transition-colors" data-code="${item.codigo_format}" title="Cambiar foto">
+                            <button class="add-img-btn p-1 md:p-1.5 rounded-md bg-villalba-blue/90 hover:bg-blue-600 dark:hover:bg-blue-500 text-white shadow-sm transition-colors" title="Cambiar foto">
                                 <span class="material-symbols-outlined text-[18px] md:text-[20px]">upload</span>
                             </button>
                         </div>
@@ -150,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight whitespace-nowrap block">${item.codigo_format}</span>
                 </td>
                 <td class="py-3 px-4">
-                    <p class="text-xs font-medium text-slate-600 dark:text-slate-300 truncate max-w-[250px] md:max-w-[400px] xl:max-w-[600px]" title="${item.descripcion || '-'}">
+                    <p class="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed max-w-[400px] md:max-w-none whitespace-normal" title="${item.descripcion || '-'}">
                         ${item.descripcion || '-'}
                     </p>
                 </td>
@@ -166,54 +212,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             `;
             
-            tbody.appendChild(tr);
-        });
-
-        attachImageProcessors();
-    };
-
-    const attachImageProcessors = () => {
-        document.querySelectorAll('.add-img-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                currentProcessingCode = e.currentTarget.getAttribute('data-code');
+            // Assign localized event listeners for the inline buttons
+            tr.querySelector('.add-img-btn').addEventListener('click', () => {
+                currentProcessingCode = item.codigo_format;
                 imageProcessorInput.click();
             });
-        });
 
-        const imageModal = document.getElementById('image-modal');
-        const modalImage = document.getElementById('modal-image');
-        const modal3d = document.getElementById('modal-3d');
-        const modalCaption = document.getElementById('modal-caption');
-
-        const openModal = () => {
-            imageModal.classList.remove('hidden');
-            // Trigger reflow to animate opacity
-            void imageModal.offsetWidth;
-            imageModal.classList.add('opacity-100');
-        };
-
-        // Ver Modelo 3D
-        document.querySelectorAll('.view-3d-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const code = e.currentTarget.getAttribute('data-code');
+            tr.querySelector('.view-3d-btn').addEventListener('click', () => {
+                const code = item.codigo_format;
                 const glbPath = `../assets/3d/${code}.glb`;
-                
                 modalImage.classList.add('hidden');
                 modal3d.classList.remove('hidden');
-                
-                if (modal3d.getAttribute('src') !== glbPath) {
-                    modal3d.src = glbPath;
-                }
-                
+                if (modal3d.getAttribute('src') !== glbPath) modal3d.src = glbPath;
                 modalCaption.textContent = `Modelo 3D - Código: ${code}`;
                 openModal();
             });
+            
+            fragment.appendChild(tr);
         });
-        
-        modal3d.addEventListener('error', (e) => {
-             modalCaption.textContent = `Error: Archivo 3D no encontrado para ${modalCaption.textContent.split(': ')[1]}`;
-             modal3d.classList.add('hidden');
-        });
+
+        tbody.appendChild(fragment);
+        currentRenderedCount += chunk.length;
+
+        // Mostrar o esconder el sentinel
+        setTimeout(() => {
+            observerSentinel.style.display = currentRenderedCount < currentFilteredItems.length ? 'flex' : 'none';
+        }, 100);
     };
 
     // LOGICA DE CONVERSIÓN DE IMAGEN PARA LOCAL ASSETS
@@ -256,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         imageProcessorInput.value = '';
     });
 
-    const applyFilters = () => {
+    function applyFilters() {
         const term = searchInput.value.toLowerCase();
         const estFilter = filterState.value.toLowerCase();
         const famFilter = filterFamily.value.toLowerCase();
@@ -282,9 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
     filterFamily.addEventListener('change', applyFilters);
 
     // Modal de imagen/3D cerrar
-    const imageModal = document.getElementById('image-modal');
-    const modal3d = document.getElementById('modal-3d');
-    
     const closeModal = () => {
         imageModal.classList.remove('opacity-100');
         setTimeout(() => {

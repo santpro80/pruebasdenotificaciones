@@ -4,15 +4,12 @@ file_path = r"c:\Users\Tecnica\appweb santi\TRAZABILIDAD DE CAJAS\public\pedidos
 with codecs.open(file_path, 'r', 'utf-8') as f:
     text = f.read()
 
-# We need to completely rewrite the `updateOperatorOrdersList` function
 pre = text[:text.find('function updateOperatorOrdersList() {')]
 
-# find the end of updateOperatorOrdersList
 post_idx = text.find('window.switchTab = (tab) => {')
 
 if post_idx == -1:
     print("Could not find window.switchTab")
-    # let's try reading the file up to the window assignments
     post_idx = text.find('window.gestionPedidos = {')
 
 
